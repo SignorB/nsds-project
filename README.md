@@ -2,15 +2,14 @@
 
 ### Starting the project
 
-First of all, to start the project, you need to make sure you recursively cloned the repository, so that you have all the submodules:
+First of all, initialize `contiki-ng`:
 
 ```bash
-git submodule update --init src/smart-grid-iot/contiki-ng
-
-cd src/smart-grid-iot/contiki-ng
-git submodule update --init tools/cooja
-cd ../../..
+git clone --branch release-5.1 --depth 1 https://github.com/contiki-ng/contiki-ng src/smart-grid-iot/contiki-ng
+git -C src/smart-grid-iot/contiki-ng submodule update --init tools/cooja
 ```
+
+If `src/smart-grid-iot/contiki-ng` already exists, remove it before running the two commands above.
 
 Then, install the Node-RED plugins:
 
