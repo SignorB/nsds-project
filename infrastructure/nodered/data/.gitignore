@@ -1,0 +1,30 @@
+# Ignore node modules (dependencies)
+node_modules/
+
+# Ignore logs and temp files
+*.log
+*.tmp
+*.bak
+*.backup
+
+# Ignore the palette module cache
+/.config/.cache/
+
+# Ignore user data except flows and settings
+# package.json
+package-lock.json
+
+#.gitignore should not ignore your flows and settings files
+# Include the flows file(s) to version control
+!flows.json
+!flows_*.json
+
+# Include setting files commonly used
+!settings.js
+!settings_*.js
+
+# Ignore other runtime config and data folders
+.bower_components/
+.backups/
+data/
+.npm

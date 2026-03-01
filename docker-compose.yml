@@ -1,0 +1,175 @@
+services:
+  kafka:
+    image: apache/kafka:latest
+    environment:
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_NODE_ID: "1"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1" 
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "0.0.0.0:9092:9092"
+    volumes:
+      - ./infrastructure/kafka/data:/var/lib/kafka/data
+    networks:
+      - infra
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"
+      ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    ports:
+      - "0.0.0.0:1883:1883"
+      - "0.0.0.0:9001:9001"
+    volumes:
+      - ./infrastructure/mosquitto/data:/mosquitto/data
+      - ./infrastructure/mosquitto/log:/mosquitto/log
+      - ./infrastructure/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    networks:
+      - infra
+
+  nodered:
+    build:
+      context: ./infrastructure/nodered
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "0.0.0.0:1880:1880"
+    volumes:
+      - ./infrastructure/nodered/data:/data
+    environment:
+      KAFKA_HOST: kafka
+      KAFKA_PORT: "9092"
+      MQTT_BROKER_HOST: mqtt
+      MQTT_BROKER_PORT: "1883"
+    networks:
+      - infra
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "0.0.0.0:8080:8080"
+    environment:
+      DYNAMIC_CONFIG_ENABLED: "true"
+      KAFKA_CLUSTERS_0_NAME: main
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092"
+    volumes:
+      - ./infrastructure/kafkaui/config.yml:/etc/kafkaui/dynamic_config.yaml
+    networks:
+      - infra
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "0.0.0.0:8501:8501"
+    environment:
+      KAFKA_HOST: kafka
+      KAFKA_PORT: "9092"
+      MQTT_BROKER_HOST: mqtt
+      MQTT_BROKER_PORT: "1883"
+    networks:
+      - infra
+
+  account-service:
+    image: akka-services:latest
+    build:
+      context: ./src/AkkaServices
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      SERVICE_NAME: account-service
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+    networks:
+      - infra
+
+  billing-service:
+    image: akka-services:latest
+    depends_on:
+      account-service:
+        condition: service_started 
+      kafka:
+        condition: service_healthy
+    environment:
+      SERVICE_NAME: billing-service
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+    networks:
+      - infra
+
+  district-node-manager:
+    image: akka-services:latest
+    depends_on:
+      account-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      SERVICE_NAME: district-node-manager
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+    networks:
+      - infra
+
+  measurement-service:
+    image: akka-services:latest
+    depends_on:
+      account-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      SERVICE_NAME: measurement-service
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+    networks:
+      - infra
+
+  contiki:
+    image: contiker/contiki-ng
+    container_name: contiki-cooja
+    privileged: true
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+    depends_on:
+      - mqtt
+    environment:
+      DISPLAY: "${DISPLAY}"
+      QT_X11_NO_MITSHM: "1"
+      MQTT_BROKER_HOST: mqtt
+      MQTT_BROKER_PORT: "1883"
+    volumes:
+      - ./src/smart-grid-iot/contiki-ng:/home/user/contiki-ng
+      - ./src/smart-grid-iot/motes:/home/user/motes
+      - ./src/smart-grid-iot/simulations:/home/user/simulations
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    working_dir: /home/user
+    command: /bin/bash /home/user/simulations/start_simulation.sh
+    networks:
+      - infra
+
+networks:
+  infra:
+    driver: bridge

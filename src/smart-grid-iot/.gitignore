@@ -1,0 +1,19 @@
+# Ignore build artifacts
+*.o
+*.a
+*.map
+*.sky
+*.z1
+*.native
+obj_*/
+symbols.c
+symbols.h
+
+# Ignore Cooja logs
+COOJA.log
+cooja_log*/
+/build/
+
+# Clion
+.idea/
+cmake-build-*/

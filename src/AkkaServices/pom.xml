@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>it.polimi.nsds.smartGrid</groupId>
+    <artifactId>AkkaServices</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <akka.version>2.10.9</akka.version>
+        <scala.binary.version>2.13</scala.binary.version>
+    </properties>
+
+    <build>
+        <finalName>akka-services</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>common.Main</mainClass>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>reference.conf</resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>application.conf</resource>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>akka-secure</id>
+            <name>Akka Secure</name>
+            <url>
+                https://repo.akka.io/vj-2EanmGA2ns4arZrw1CmQMDqoRiKvVKiwYZ1qrDXE9Rb9t/secure
+            </url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>akka-secure-plugins</id>
+            <name>Akka Secure Plugins</name>
+            <url>
+                https://repo.akka.io/vj-2EanmGA2ns4arZrw1CmQMDqoRiKvVKiwYZ1qrDXE9Rb9t/secure
+            </url>
+        </pluginRepository>
+    </pluginRepositories>
+    <dependencies>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor-typed_${scala.binary.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-stream_${scala.binary.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-stream-kafka_${scala.binary.version}</artifactId>
+            <version>7.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor-testkit-typed_${scala.binary.version}</artifactId>
+            <version>${akka.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

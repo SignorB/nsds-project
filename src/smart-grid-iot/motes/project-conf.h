@@ -1,0 +1,21 @@
+#ifndef SMART_GRID_IOT_PROJECT_CONF_H
+#define SMART_GRID_IOT_PROJECT_CONF_H
+
+// MQTT Protocol Version (4 = MQTT v3.1.1)
+#define MQTT_CONF_VERSION 4
+
+// Enable IPv6 and RPL
+#define NETSTACK_CONF_WITH_IPV6 1
+
+// Enable TCP for MQTT
+#define UIP_CONF_TCP 1
+#define UIP_CONF_TCP_MSS 128
+
+// MQTT Configuration
+#define MQTT_CLIENT_CONF_ORG_ID "contiki-ng"
+#define MQTT_CLIENT_CONF_AUTH_TOKEN "authToken"
+#define MQTT_CLIENT_CONF_USERNAME "user"
+#define MQTT_CLIENT_CONF_MAX_PACKET_PAYLOAD_SIZE 256
+#define LOG_CONF_LEVEL_MQTT LOG_LEVEL_DBG
+
+#endif  // SMART_GRID_IOT_PROJECT_CONF_H

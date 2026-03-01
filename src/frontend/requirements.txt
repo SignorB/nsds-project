@@ -1,0 +1,13 @@
+# Web UI
+streamlit>=1.32.0
+
+# Kafka client
+confluent-kafka>=2.3.0
+
+# Apache Spark (PySpark) + Kafka connector
+pyspark>=3.5.0
+pyspark[sql]
+
+# Useful extras
+pandas>=2.0.0
+

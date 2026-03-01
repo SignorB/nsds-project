@@ -1,0 +1,428 @@
+[
+    {
+        "id": "468558a4a378aaae",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "1635ce2323ac27b4",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f9c8eb931e4f6695",
+        "type": "mqtt-broker",
+        "name": "MQTT",
+        "broker": "mqtt",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "27bfc91a923ad050",
+        "type": "oriolrius-kafka-broker",
+        "name": "Kafka",
+        "hosts": "kafka:9092",
+        "usesasl": false,
+        "saslmechanism": "plain",
+        "username": "",
+        "password": "",
+        "usetls": false,
+        "cacert": "",
+        "clientcert": "",
+        "privatekey": "",
+        "passphrase": "",
+        "selfsign": false,
+        "useiot": false,
+        "model": "use",
+        "device": "use",
+        "iotType": "props",
+        "fields": []
+    },
+    {
+        "id": "9031c2729418033a",
+        "type": "oriolrius-kafka-consumer",
+        "z": "468558a4a378aaae",
+        "name": "Kafka - Node Lifecycle Receiver",
+        "broker": "27bfc91a923ad050",
+        "topic": "node-lifecycle-events",
+        "groupid": "",
+        "fromOffset": "latest",
+        "outOfRangeOffset": "latest",
+        "encoding": "utf8",
+        "minbytes": 1,
+        "maxbytes": 1048576,
+        "useSchemaValidation": false,
+        "registryUrl": "http://localhost:8081",
+        "schemaSubject": "",
+        "useRegistryAuth": false,
+        "registryUsername": "",
+        "registryPassword": "",
+        "x": 150,
+        "y": 40,
+        "wires": [
+            [
+                "edc213867eb5f311",
+                "ade27f6baf1b08c0"
+            ]
+        ]
+    },
+    {
+        "id": "edc213867eb5f311",
+        "type": "json",
+        "z": "468558a4a378aaae",
+        "name": "JSON to Object",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 400,
+        "y": 40,
+        "wires": [
+            [
+                "6351e0f8774bc83f"
+            ]
+        ]
+    },
+    {
+        "id": "6351e0f8774bc83f",
+        "type": "function",
+        "z": "468558a4a378aaae",
+        "name": "Parser",
+        "func": "// 1. Determine Action\nconst eventType = msg.payload.eventType;\nlet command = \"\";\n\nif (eventType === \"NodeCreated\" || eventType === \"NodeUpdated\") {\n    // Logic for START\n    const nodeType = msg.payload.payload.nodeType.toUpperCase(); // \"PRODUCER\" or \"CONSUMER\"\n    command = 'START_'+nodeType;\n} else if (eventType === \"NodeDeleted\") {\n    // Logic for STOP\n    command = \"STOP\";\n} else {\n    console.log('Unknown event type '+eventType)\n    return null;\n}\n\n// 2. Parse the Node ID (\"n_2\" -> \"2\")\nconst nodeIdRaw = msg.payload.payload.nodeId; // \"n_2\"\nconst nodeIdNum = nodeIdRaw.split('_')[1];    // \"2\"\n\n// 3. Set the MQTT Topic\n// Pattern: grid/node/node-{ID}/config\nmsg.topic = 'grid/node/node-'+nodeIdNum+'/config';\n\n// 4. Set the final payload\nmsg.payload = command;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 40,
+        "wires": [
+            [
+                "eb39d6076ab3ae1a",
+                "b7d9de07f5b3fde6"
+            ]
+        ]
+    },
+    {
+        "id": "eb39d6076ab3ae1a",
+        "type": "mqtt out",
+        "z": "468558a4a378aaae",
+        "name": "MQTT - Node Control Sender",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "f9c8eb931e4f6695",
+        "x": 790,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "ade27f6baf1b08c0",
+        "type": "debug",
+        "z": "468558a4a378aaae",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 380,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "b7d9de07f5b3fde6",
+        "type": "debug",
+        "z": "468558a4a378aaae",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 720,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "84bdd3a351039baa",
+        "type": "oriolrius-kafka-consumer",
+        "z": "468558a4a378aaae",
+        "name": "Kafka - Measurements Receiver",
+        "broker": "27bfc91a923ad050",
+        "topic": "measurement-events",
+        "groupid": "",
+        "fromOffset": "latest",
+        "outOfRangeOffset": "latest",
+        "encoding": "utf8",
+        "minbytes": 1,
+        "maxbytes": 1048576,
+        "useSchemaValidation": false,
+        "registryUrl": "http://localhost:8081",
+        "schemaSubject": "",
+        "useRegistryAuth": false,
+        "registryUsername": "",
+        "registryPassword": "",
+        "x": 150,
+        "y": 260,
+        "wires": [
+            [
+                "f8e963b21b61e8fc",
+                "95a4afe01369ac37"
+            ]
+        ]
+    },
+    {
+        "id": "f8e963b21b61e8fc",
+        "type": "json",
+        "z": "468558a4a378aaae",
+        "name": "JSON to Object",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 400,
+        "y": 260,
+        "wires": [
+            [
+                "f1c102abbdb7687c"
+            ]
+        ]
+    },
+    {
+        "id": "f1c102abbdb7687c",
+        "type": "function",
+        "z": "468558a4a378aaae",
+        "name": "Parser",
+        "func": "const eventType = msg.payload.eventType;\n\nif (eventType !== \"MeasurementReported\"){\n    console.log('Not a successful measurement: ' + eventType);\n    return null;\n}\n\nconst nodeType = msg.payload.payload.nodeType.toUpperCase();\n\nif (nodeType === \"PRODUCER\" || nodeType === \"CONSUMER\") {\n    \n    if (msg.payload.payload.accumulatorNodeId) {\n        const accNodeIdRaw = msg.payload.payload.accumulatorNodeId; // \"n_2\"\n        const accNodeIdNum = accNodeIdRaw.split('_')[1];\n        \n        msg.topic = 'grid/node/node-' + accNodeIdNum + '/acc';\n\n        const value = msg.payload.payload.value;\n        const sign = value >= 0 ? 'P' : 'N';\n        msg.payload = 'VALUE_' + sign + Math.abs(value);\n\n        return msg;\n    } else {\n        console.log('accumulatorNodeId is missing or null');\n        return null; \n    }\n    \n} else {\n    console.log('Unknown node type: ' + nodeType);\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 260,
+        "wires": [
+            [
+                "c405dbbb01bde56f",
+                "7e05165e49f690a5"
+            ]
+        ]
+    },
+    {
+        "id": "c405dbbb01bde56f",
+        "type": "mqtt out",
+        "z": "468558a4a378aaae",
+        "name": "MQTT - Node Accumulator Sender",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "f9c8eb931e4f6695",
+        "x": 800,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "95a4afe01369ac37",
+        "type": "debug",
+        "z": "468558a4a378aaae",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 380,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "7e05165e49f690a5",
+        "type": "debug",
+        "z": "468558a4a378aaae",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 720,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "3e584d92c7520a2d",
+        "type": "mqtt in",
+        "z": "1635ce2323ac27b4",
+        "name": "MQTT - Measurements Receiver",
+        "topic": "grid/node/+/measurements",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f9c8eb931e4f6695",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 40,
+        "wires": [
+            [
+                "72774fa5757eb963",
+                "6cf4c3448fa31d72"
+            ]
+        ]
+    },
+    {
+        "id": "72774fa5757eb963",
+        "type": "function",
+        "z": "1635ce2323ac27b4",
+        "name": "Parser",
+        "func": "// 1. Extract Node ID from the MQTT Topic\n// Input Topic: \"grid/node/node-2/measurements\"\nconst topicParts = msg.topic.split('/');\nconst nodeSegment = topicParts[2]; // \"node-2\"\nconst rawId = nodeSegment.split('-')[1]; // \"2\"\n\n// Construct the target ID: \"n_2\"\nconst targetNodeId = 'n_'+rawId;\n\n// 2. Parse the Value\nconst moteValue = parseInt(msg.payload.toString());\n\n// 3. Construct the Kafka Message\nconst kafkaMessage = {\n    \"nodeId\": targetNodeId,\n    \"value\": moteValue,\n    \"timestamp\": Date.now().toString()\n};\n\n// 4. Send to Kafka\nmsg.payload = kafkaMessage;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 40,
+        "wires": [
+            [
+                "259e3ee907817056",
+                "4a02efb0c7298331"
+            ]
+        ]
+    },
+    {
+        "id": "259e3ee907817056",
+        "type": "oriolrius-kafka-producer",
+        "z": "1635ce2323ac27b4",
+        "name": "Kafka - Measurement Sender",
+        "broker": "27bfc91a923ad050",
+        "topic": "measurements-raw",
+        "requireAcks": 1,
+        "ackTimeoutMs": 100,
+        "attributes": 0,
+        "useSchemaValidation": false,
+        "registryUrl": "http://localhost:8081",
+        "schemaSubject": "",
+        "schemaVersion": "latest",
+        "useRegistryAuth": false,
+        "registryUsername": "",
+        "registryPassword": "",
+        "autoRegister": false,
+        "autoSchema": "{\"type\": \"record\", \"name\": \"Message\", \"fields\": [{\"name\": \"id\", \"type\": \"string\"}, {\"name\": \"message\", \"type\": \"string\"}, {\"name\": \"timestamp\", \"type\": \"long\"}]}",
+        "validateOnly": false,
+        "useiot": false,
+        "model": "use",
+        "device": "use",
+        "iotType": "props",
+        "fields": [],
+        "x": 660,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6cf4c3448fa31d72",
+        "type": "debug",
+        "z": "1635ce2323ac27b4",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 380,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "4a02efb0c7298331",
+        "type": "debug",
+        "z": "1635ce2323ac27b4",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 580,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "b527af0d2d60a23e",
+        "type": "mqtt in",
+        "z": "1635ce2323ac27b4",
+        "name": "MQTT - Config Receiver",
+        "topic": "grid/node/+/config",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f9c8eb931e4f6695",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 130,
+        "y": 160,
+        "wires": [
+            [
+                "6cf4c3448fa31d72"
+            ]
+        ]
+    }
+]

@@ -1,0 +1,13 @@
+# Project related ignores
+cloudbeaver/**
+
+# allow the path components and only the specific file
+!cloudbeaver/workspace/
+!cloudbeaver/workspace/GlobalConfiguration/
+!cloudbeaver/workspace/GlobalConfiguration/.dbeaver/
+!cloudbeaver/workspace/GlobalConfiguration/.dbeaver/data-sources.json
+
+mysql/data/
+nodered/data/node_modules/
+mosquitto/log/
+kafka/data/

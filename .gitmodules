@@ -1,0 +1,4 @@
+[submodule "src/smart-grid-iot/contiki-ng"]
+	path = src/smart-grid-iot/contiki-ng
+	url = https://github.com/contiki-ng/contiki-ng
+	branch = release-5.1

@@ -1,0 +1,11 @@
+{
+    "name": "node-red-project",
+    "description": "A Node-RED Project",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "@oriolrius/node-red-contrib-kafka": "~6.1.1",
+        "node-red-contrib-kafkajs": "~0.0.7",
+        "node-red-node-mysql": "~2.0.0"
+    }
+}
