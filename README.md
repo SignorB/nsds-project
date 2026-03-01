@@ -11,6 +11,14 @@ git -C src/smart-grid-iot/contiki-ng submodule update --init tools/cooja
 
 If `src/smart-grid-iot/contiki-ng` already exists, remove it before running the two commands above.
 
+Quick check:
+
+```bash
+ls src/smart-grid-iot/contiki-ng/tools/cooja
+```
+
+If this path does not exist, the Contiki clone is incomplete (the `contiki` container will fail with `cd: /home/user/contiki-ng/tools/cooja: No such file or directory`).
+
 Then, install the Node-RED plugins:
 
 ```bash
